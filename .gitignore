@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.python-version
+.pytest_cache/
+.mypy_cache/
+
+# Local configuration and experiment-tracking state
+.env
+clearml.conf
+clearml/
+
+# Input data, models and generated artifacts
+data/*
+!data/README.md
+artifacts/
+models/
+outputs/
+answer.csv
+*.parquet
+*.zip
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
