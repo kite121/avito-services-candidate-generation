@@ -15,8 +15,8 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 
 ## Current status
 
-- **Project state:** planned; datasets have not yet been added to the workspace.
-- **Current milestone:** `M0 — data audit and evaluation contract`.
+- **Project state:** M0 complete; M1 lexical baseline is next.
+- **Current milestone:** `M1 — lexical retrieval`.
 - **Rule:** do not claim an improvement until it was measured on the frozen
   local validation protocol below.
 
@@ -24,8 +24,8 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 
 | Stage | Experiments | Purpose | Exit result | Status |
 | --- | --- | --- | --- | --- |
-| M0 — Data audit | — | Verify files, overlaps, labels and evaluation protocol | Frozen corpus/split, data report, metric and submission validator | Current |
-| M1 — Lexical retrieval | E01–E03 | Establish and strengthen BM25-based search | Best lexical baseline with measured Recall@50 | Planned |
+| M0 — Data audit | — | Verify files, overlaps, labels and evaluation protocol | Frozen corpus/split, data report, metric and submission validator | Complete |
+| M1 — Lexical retrieval | E01–E03 | Establish and strengthen BM25-based search | Best lexical baseline with measured Recall@50 | Next |
 | M2 — Historical signal | E04 | Test general query-to-clicked-item retrieval from train | Accepted or rejected history source with documented coverage | Planned |
 | M3 — Zero-shot dense | E05 | Benchmark semantic bi-encoders | One or two complementary dense retrievers | Planned |
 | M4 — Domain adaptation | E06–E07 | Fine-tune the selected bi-encoder with mined negatives | Confirmed fine-tuned checkpoint or explicit rejection | Planned |
@@ -121,6 +121,21 @@ that most closely matches inference and document the decision.
 Use a primary frozen validation fold for rapid iteration. Before accepting an
 expensive or high-impact change, repeat it on a second group-disjoint fold.
 The test benchmark and its hidden labels are never used to tune a method.
+
+### M0 decision: frozen proxy v1
+
+The audit selected the benchmark-aligned proxy. It uses all 189,212 rows of
+`benchmark_items.parquet` as the retrieval corpus and only train positives
+whose `item_id` is present in that corpus as labels. A logical query is the
+normalized tuple of all five `search_*` fields; it is never split between
+folds. `GroupShuffleSplit(test_size=0.20, random_state=42)` produces 21,239
+train groups and 5,310 validation groups (33,010 surviving positive rows over
+26,549 logical queries overall).
+
+Only 5.26% of unique train item IDs occur in the benchmark corpus. Thus this
+is a reproducible, corpus-aligned selection proxy rather than an estimate of
+the hidden leaderboard score. Every later experiment must report macro
+Recall@50 on this frozen fold and meaningful query slices.
 
 ### Metrics
 
@@ -446,3 +461,4 @@ Git commit:
 | Date | Stage | Decision | Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 2026-09-17 | Planning | Adopt ClearML plus local artifacts and this plan | Approved before data audit | Active |
+| 2026-09-17 | M0 | Freeze `benchmark_aligned_proxy_v1`: benchmark corpus, group-disjoint 80/20 split, seed 42, macro Recall@50 | Executed audit notebook; 5,310 validation groups and submission validator smoke test | Active |

@@ -9,7 +9,8 @@ historical, semantic and hybrid retrieval improve candidate coverage.
 
 ## Status
 
-Current milestone: **M0 — data audit and evaluation contract**.
+Current milestone: **M1 — lexical retrieval**. The completed M0 audit notebook
+is at `output/jupyter-notebook/m0_data_audit.ipynb`.
 
 The full roadmap, experiment hypotheses and ClearML tracking contract are in
 [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md).
@@ -20,6 +21,7 @@ The full roadmap, experiment hypotheses and ClearML tracking contract are in
 configs/                  Versioned experiment configurations
 data/                     Local input data only; ignored by Git
 docs/                     Project documentation and experiment plan
+output/jupyter-notebook/   Versioned executed analysis notebooks
 src/avito_retrieval/      Source package
 ```
 
