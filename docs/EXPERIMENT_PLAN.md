@@ -45,10 +45,13 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 4. Every submitted ID must be present in `benchmark_items.parquet`; output
    ordering is irrelevant to the official metric, but selection of the final 50
    is not.
-5. Change one meaningful factor per experiment. A result without config,
+5. For a query with a valid `search_category`, every retrieval source searches
+   only the partition where `item_category_id == search_category`. If the query
+   category is missing or invalid, use the full corpus as a fallback.
+6. Change one meaningful factor per experiment. A result without config,
    validation predictions, code version and runtime is not evidence.
-6. Public leaderboard submissions are confirmation points, not a hyperparameter
-   search loop. We have only seven attempts.
+7. CSV evaluations are confirmation points, not a hyperparameter search loop.
+   We have only seven attempts.
 
 ## Experiment tracking contract
 
@@ -179,6 +182,8 @@ function produces macro Recall@50; a dummy answer passes the format validator.
 **Hypothesis:** lexical overlap is a meaningful baseline for short service
 queries.
 
+- Candidate partition: `item_category_id == search_category` (the M0 hard
+  constraint); use the full corpus only for a missing or invalid query category.
 - Document text: deterministic concatenation of title, item parameters and
   description.
 - Query text: `search_query` only in the first pass.
@@ -462,3 +467,4 @@ Git commit:
 | --- | --- | --- | --- | --- |
 | 2026-09-17 | Planning | Adopt ClearML plus local artifacts and this plan | Approved before data audit | Active |
 | 2026-09-17 | M0 | Freeze `benchmark_aligned_proxy_v1`: benchmark corpus, group-disjoint 80/20 split, seed 42, macro Recall@50 | Executed audit notebook; 5,310 validation groups and submission validator smoke test | Active |
+| 2026-09-17 | M0 | Make `item_category_id == search_category` a hard retrieval partition; fallback to all items only for an invalid category | 99.9894% category match among 33,010 benchmark-corpus-aligned train positives | Active |
