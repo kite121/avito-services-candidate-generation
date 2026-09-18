@@ -53,6 +53,25 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 7. CSV evaluations are confirmation points, not a hyperparameter search loop.
    We have only seven attempts.
 
+## Notebook presentation standard
+
+Every versioned experiment notebook must be understandable on a first read by a
+reviewer without reading its source code first.
+
+1. Start with a title, objective, evaluation protocol and a short numbered
+   **plan of the notebook**.
+2. Divide the work into numbered global sections (for example, data setup,
+   validation construction, experiment, results and decision). Each section
+   heading explains in one or two sentences what the immediately following
+   cells do and why that step exists.
+3. Add an inline code comment only for a non-obvious assumption, constraint or
+   implementation choice; do not narrate routine Python syntax.
+4. Finish with a compact results table, retained/rejected decision and next
+   step. Keep outputs small and reproducible.
+
+This is a readability contract, not a request for verbose prose: the goal is
+clear navigation and experimental intent, not commentary on every line.
+
 ## Experiment tracking contract
 
 ### Sources of truth
