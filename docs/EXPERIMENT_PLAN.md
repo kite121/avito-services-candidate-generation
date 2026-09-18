@@ -15,8 +15,8 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 
 ## Current status
 
-- **Project state:** M1 complete; M2 historical signal is next.
-- **Current milestone:** `M2 — historical signal`.
+- **Project state:** M2 complete; M3 zero-shot dense retrieval is next.
+- **Current milestone:** `M3 — zero-shot semantic retrieval`.
 - **Rule:** do not claim an improvement until it was measured on the frozen
   local validation protocol below.
 
@@ -26,8 +26,8 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 | --- | --- | --- | --- | --- |
 | M0 — Data audit | — | Verify files, overlaps, labels and evaluation protocol | Frozen corpus/split, data report, metric and submission validator | Complete |
 | M1 — Lexical retrieval | E01–E03 | Establish and strengthen BM25-based search | Best lexical baseline with measured Recall@50 | Complete |
-| M2 — Historical signal | E04 | Test general query-to-clicked-item retrieval from train | Accepted or rejected history source with documented coverage | Next |
-| M3 — Zero-shot dense | E05 | Benchmark semantic bi-encoders | One or two complementary dense retrievers | Planned |
+| M2 — Historical signal | E04 | Test general query-to-clicked-item retrieval from train | Accepted or rejected history source with documented coverage | Complete |
+| M3 — Zero-shot dense | E05 | Benchmark semantic bi-encoders | One or two complementary dense retrievers | Next |
 | M4 — Domain adaptation | E06–E07 | Fine-tune the selected bi-encoder with mined negatives | Confirmed fine-tuned checkpoint or explicit rejection | Planned |
 | M5 — Hybrid candidates | E08–E09 | Measure source complementarity and fuse candidates | Frozen candidate pool and fusion baseline | Planned |
 | M6 — Final-50 selector | E10–E11 | Select the best 50 from the hybrid pool | Simplest selector that improves Recall@50 | Planned |
@@ -280,6 +280,26 @@ overall frozen validation score.
 **Exit criteria for M2:** either retain a general historical candidate source
 with a documented quota, or explicitly reject it.
 
+#### M2 decision: retained historical sources
+
+Retain two general, `query_id`-free sources:
+
+1. **Exact normalized full-context lookup** as a candidate-pool source. It has
+   zero coverage on a group-disjoint validation fold by construction, but
+   produces benchmark-valid candidates for 2.488% of final benchmark queries
+   after the category rule is applied.
+2. **Character-TFIDF nearest historical query**, propagated through
+   benchmark-valid historical positives and given a quota of **20** candidates
+   in the 50-candidate M1 control policy. It includes repeated text queries and
+   nearest lexical variants; separate text/category and unseen-only rules were
+   weaker and are not retained separately.
+
+The improvement reproduced on two group-disjoint splits using the same fixed
+quota: seed 42 improved macro Recall@50 from 0.297264 to 0.333928 (+0.036664),
+and seed 314 from 0.306026 to 0.338708 (+0.032682). The final ClearML task is
+`494d2e7e5f274c3c99b40255ec1900a6`. M5–M6 must retest this quota after other
+candidate sources are added; M2 does not claim it is the final selector.
+
 ---
 
 ### M3 — zero-shot semantic retrieval
@@ -507,3 +527,4 @@ Git commit:
 | 2026-09-17 | M0 | Freeze `benchmark_aligned_proxy_v1`: benchmark corpus, group-disjoint 80/20 split, seed 42, macro Recall@50 | Executed audit notebook; 5,310 validation groups and submission validator smoke test | Active |
 | 2026-09-17 | M0 | Make `item_category_id == search_category` a hard retrieval partition; fallback to all items only for an invalid category | 99.9894% category match among all 497,673 labelled train pairs | Active |
 | 2026-09-18 | M1 | Retain E03c RRF(full-text BM25, title-char-TFIDF) as lexical quality baseline | Recall@50 0.297264 vs. E01 0.284071 on frozen proxy; live ClearML task `272e1172dc1b4aaaaa81d4f7d198ee3e` | Active |
+| 2026-09-18 | M2 | Retain exact full-context history plus char-TFIDF nearest-history quota 20 | Recall@50 gain reproduced: +0.036664 (seed 42), +0.032682 (seed 314); live ClearML task `494d2e7e5f274c3c99b40255ec1900a6` | Active |

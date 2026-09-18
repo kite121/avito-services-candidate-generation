@@ -9,9 +9,10 @@ historical, semantic and hybrid retrieval improve candidate coverage.
 
 ## Status
 
-Current milestone: **M2 — historical signal**. Completed analysis notebooks:
+Current milestone: **M3 — zero-shot semantic retrieval**. Completed analysis notebooks:
 `output/jupyter-notebook/m0_data_audit.ipynb` and
-`output/jupyter-notebook/m1_lexical_retrieval.ipynb`.
+`output/jupyter-notebook/m1_lexical_retrieval.ipynb` and
+`output/jupyter-notebook/m2_historical_query_retrieval.ipynb`.
 
 The full roadmap, experiment hypotheses and ClearML tracking contract are in
 [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md).
