@@ -17,11 +17,18 @@ Current milestone: **M3 — zero-shot semantic retrieval**. Completed analysis n
 The full roadmap, experiment hypotheses and ClearML tracking contract are in
 [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md).
 
+The current lexical baseline is RRF over stemmed all-field BM25 and
+control-normalized title char-TFIDF (`Recall@50 = 0.312988` on the frozen
+proxy). Its reusable local text cache is
+`artifacts/text_preprocessing/m1_lexical_best_v1/`; it is derived data and is
+intentionally ignored by Git.
+
 ## Layout
 
 ```text
 configs/                  Versioned experiment configurations
 data/                     Local input data only; ignored by Git
+artifacts/text_preprocessing/  Reusable derived text representations; ignored by Git
 docs/                     Project documentation and experiment plan
 output/jupyter-notebook/   Versioned executed analysis notebooks
 src/avito_retrieval/      Source package

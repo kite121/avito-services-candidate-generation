@@ -25,7 +25,7 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 | Stage | Experiments | Purpose | Exit result | Status |
 | --- | --- | --- | --- | --- |
 | M0 — Data audit | — | Verify files, overlaps, labels and evaluation protocol | Frozen corpus/split, data report, metric and submission validator | Complete |
-| M1 — Lexical retrieval | E01–E03 | Establish and strengthen BM25-based search | Best lexical baseline with measured Recall@50 | Complete |
+| M1 — Lexical retrieval | E01–E04 | Establish and strengthen BM25-based search | Best lexical baseline with measured Recall@50 | Complete |
 | M2 — Historical signal | E04 | Test general query-to-clicked-item retrieval from train | Accepted or rejected history source with documented coverage | Complete |
 | M3 — Zero-shot dense | E05 | Benchmark semantic bi-encoders | One or two complementary dense retrievers | Next |
 | M4 — Domain adaptation | E06–E07 | Fine-tune the selected bi-encoder with mined negatives | Confirmed fine-tuned checkpoint or explicit rejection | Planned |
@@ -238,24 +238,52 @@ Compare:
 **Exit criteria for M1:** retain the strongest reproducible lexical source and
 record its Recall@50, union coverage and resource cost.
 
+#### E04 — Russian preprocessing ablation
+
+Run the following word-BM25 transformations on the identical all-field corpus
+and frozen split: control normalization, Snowball Russian stemming,
+`pymorphy3` lemmatization, Russian stop-word removal, and both morphology plus
+stop-word combinations. Select the word-BM25 winner by macro Recall@50, then
+test it with the control title char-TFIDF and with similarly transformed
+char-TFIDF. This prevents linguistic preprocessing from being accepted without
+retrieval evidence.
+
 #### M1 decision: retained lexical baseline
 
-Retain **E03c**, RRF over the top-200 lists of full-text BM25 and title-only
-character TF-IDF, as the M1 quality baseline. On `benchmark_aligned_proxy_v1`
-it reaches **macro Recall@50 = 0.297264** (vs. **0.284071** for E01 full-text
-BM25 alone), with Recall@200 = 0.534450. The exact live ClearML task is
-`272e1172dc1b4aaaaa81d4f7d198ee3e`.
+Retain **E04 RRF(stemmed all-field BM25, control title char-TFIDF)**. On the
+frozen `benchmark_aligned_proxy_v1` split it reaches **macro Recall@50 =
+0.312988** and Recall@200 = 0.562932: an absolute gain of **+0.015724** over
+the former E03c control (0.297264). The live ClearML task is
+`40d91857fb7b4382a64f32561e716d42`.
 
-Resource trade-off on 5,310 validation queries and 189,212 corpus items:
+The all-field BM25 ablation selected Snowball stemming without stop words:
 
-- all-field BM25: 44.64 s index build, 6.06 s retrieval, 595,180 features;
-- title char-TFIDF: 5.11 s index build, 318.66 s retrieval, 97,143 features;
-- RRF: 0.64 s after both candidate lists; peak process RSS was 2.04 GB.
+| Word-BM25 preprocessing | Recall@50 |
+| --- | ---: |
+| control | 0.284071 |
+| stemming | **0.305952** |
+| lemmatization | 0.297142 |
+| stop words | 0.283914 |
+| stemming + stop words | 0.304867 |
+| lemmatization + stop words | 0.297664 |
 
-The fused result is the quality baseline, but char-TFIDF dominates retrieval
-time and must be optimized or justified before final inference. Do not retain
-title-only BM25, title-plus-parameters BM25, query-filter expansion, or
-title/all-field BM25 RRF as M1 candidates: each was weaker at Recall@50.
+Stemming the title before char-TFIDF was weaker than retaining its control
+normalization: 0.311417 versus 0.312988 for the corresponding RRFs. Thus the
+final pipeline deliberately uses two documented representations rather than
+forcing one transformation on both sources.
+
+Resource cost on 5,310 validation queries and 189,212 corpus items: stemmed
+all-field BM25 took 78.00 s to build and 8.01 s to retrieve; control title
+char-TFIDF took 6.64 s to build and 33.03 s to retrieve with batched exact
+cosine scoring. The full executed notebook took 719.49 s; writing and
+artifact-validating processed texts took 61.60 s.
+
+The materialized representations are in the ignored local directory
+`artifacts/text_preprocessing/m1_lexical_best_v1/`: `benchmark_items_text.parquet`,
+`benchmark_queries_text.parquet`, `train_query_contexts_text.parquet`,
+`manifest.json` and `validation_results.csv`. Future M2–M6 code must read this
+manifest before reusing the texts. M5–M6 will retest the history quota against
+this stronger M1 baseline before freezing the final 50-candidate allocator.
 
 ---
 
@@ -551,5 +579,5 @@ Git commit:
 | 2026-09-17 | Planning | Adopt ClearML plus local artifacts and this plan | Approved before data audit | Active |
 | 2026-09-17 | M0 | Freeze `benchmark_aligned_proxy_v1`: benchmark corpus, group-disjoint 80/20 split, seed 42, macro Recall@50 | Executed audit notebook; 5,310 validation groups and submission validator smoke test | Active |
 | 2026-09-17 | M0 | Make `item_category_id == search_category` a hard retrieval partition; fallback to all items only for an invalid category | 99.9894% category match among all 497,673 labelled train pairs | Active |
-| 2026-09-18 | M1 | Retain E03c RRF(full-text BM25, title-char-TFIDF) as lexical quality baseline | Recall@50 0.297264 vs. E01 0.284071 on frozen proxy; live ClearML task `272e1172dc1b4aaaaa81d4f7d198ee3e` | Active |
+| 2026-09-18 | M1 | Retain E04 RRF(stemmed full-text BM25, control title-char-TFIDF) as lexical quality baseline | Recall@50 0.312988, +0.015724 vs. E03c; reusable texts in `artifacts/text_preprocessing/m1_lexical_best_v1/`; live ClearML task `40d91857fb7b4382a64f32561e716d42` | Active |
 | 2026-09-18 | M2 | Retain exact full-context history plus char-TFIDF nearest-history quota 20 | Recall@50 gain reproduced: +0.036664 (seed 42), +0.032682 (seed 314); live ClearML task `494d2e7e5f274c3c99b40255ec1900a6` | Active |

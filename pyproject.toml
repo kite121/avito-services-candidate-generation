@@ -13,9 +13,12 @@ dependencies = [
     "numpy>=1.26",
     "pandas>=2.1",
     "pyarrow>=15",
+    "pymorphy3>=2.0",
     "pyyaml>=6.0",
     "rank-bm25>=0.2.2",
     "scikit-learn>=1.4",
+    "snowballstemmer>=2.2",
+    "stop-words>=2018.7.23",
 ]
 
 [project.optional-dependencies]
