@@ -15,8 +15,8 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 
 ## Current status
 
-- **Project state:** M0 complete; M1 lexical baseline is next.
-- **Current milestone:** `M1 — lexical retrieval`.
+- **Project state:** M1 complete; M2 historical signal is next.
+- **Current milestone:** `M2 — historical signal`.
 - **Rule:** do not claim an improvement until it was measured on the frozen
   local validation protocol below.
 
@@ -25,8 +25,8 @@ is absent from the 50 submitted candidates cannot be recovered downstream.
 | Stage | Experiments | Purpose | Exit result | Status |
 | --- | --- | --- | --- | --- |
 | M0 — Data audit | — | Verify files, overlaps, labels and evaluation protocol | Frozen corpus/split, data report, metric and submission validator | Complete |
-| M1 — Lexical retrieval | E01–E03 | Establish and strengthen BM25-based search | Best lexical baseline with measured Recall@50 | Next |
-| M2 — Historical signal | E04 | Test general query-to-clicked-item retrieval from train | Accepted or rejected history source with documented coverage | Planned |
+| M1 — Lexical retrieval | E01–E03 | Establish and strengthen BM25-based search | Best lexical baseline with measured Recall@50 | Complete |
+| M2 — Historical signal | E04 | Test general query-to-clicked-item retrieval from train | Accepted or rejected history source with documented coverage | Next |
 | M3 — Zero-shot dense | E05 | Benchmark semantic bi-encoders | One or two complementary dense retrievers | Planned |
 | M4 — Domain adaptation | E06–E07 | Fine-tune the selected bi-encoder with mined negatives | Confirmed fine-tuned checkpoint or explicit rejection | Planned |
 | M5 — Hybrid candidates | E08–E09 | Measure source complementarity and fuse candidates | Frozen candidate pool and fusion baseline | Planned |
@@ -218,6 +218,25 @@ Compare:
 
 **Exit criteria for M1:** retain the strongest reproducible lexical source and
 record its Recall@50, union coverage and resource cost.
+
+#### M1 decision: retained lexical baseline
+
+Retain **E03c**, RRF over the top-200 lists of full-text BM25 and title-only
+character TF-IDF, as the M1 quality baseline. On `benchmark_aligned_proxy_v1`
+it reaches **macro Recall@50 = 0.297264** (vs. **0.284071** for E01 full-text
+BM25 alone), with Recall@200 = 0.534450. The exact live ClearML task is
+`272e1172dc1b4aaaaa81d4f7d198ee3e`.
+
+Resource trade-off on 5,310 validation queries and 189,212 corpus items:
+
+- all-field BM25: 44.64 s index build, 6.06 s retrieval, 595,180 features;
+- title char-TFIDF: 5.11 s index build, 318.66 s retrieval, 97,143 features;
+- RRF: 0.64 s after both candidate lists; peak process RSS was 2.04 GB.
+
+The fused result is the quality baseline, but char-TFIDF dominates retrieval
+time and must be optimized or justified before final inference. Do not retain
+title-only BM25, title-plus-parameters BM25, query-filter expansion, or
+title/all-field BM25 RRF as M1 candidates: each was weaker at Recall@50.
 
 ---
 
@@ -467,4 +486,5 @@ Git commit:
 | --- | --- | --- | --- | --- |
 | 2026-09-17 | Planning | Adopt ClearML plus local artifacts and this plan | Approved before data audit | Active |
 | 2026-09-17 | M0 | Freeze `benchmark_aligned_proxy_v1`: benchmark corpus, group-disjoint 80/20 split, seed 42, macro Recall@50 | Executed audit notebook; 5,310 validation groups and submission validator smoke test | Active |
-| 2026-09-17 | M0 | Make `item_category_id == search_category` a hard retrieval partition; fallback to all items only for an invalid category | 99.9894% category match among 33,010 benchmark-corpus-aligned train positives | Active |
+| 2026-09-17 | M0 | Make `item_category_id == search_category` a hard retrieval partition; fallback to all items only for an invalid category | 99.9894% category match among all 497,673 labelled train pairs | Active |
+| 2026-09-18 | M1 | Retain E03c RRF(full-text BM25, title-char-TFIDF) as lexical quality baseline | Recall@50 0.297264 vs. E01 0.284071 on frozen proxy; live ClearML task `272e1172dc1b4aaaaa81d4f7d198ee3e` | Active |
