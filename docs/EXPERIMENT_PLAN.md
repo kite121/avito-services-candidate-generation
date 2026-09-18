@@ -321,8 +321,33 @@ normalization, embedding dimension, exact/ANN index parameters, Recall@K and
 index cost. With only about 189k benchmark items, test exact inner-product
 search before accepting an approximate index that can lose recall.
 
-**Exit criteria for M3:** choose at most one or two dense sources that provide
-measurable complementary recall relative to M1/M2.
+The M3 notebook separates two semantic candidate sources; they must not be
+combined before their standalone and hybrid contributions are measured.
+
+1. **E05a — direct dense item retrieval (`query → item`).** Embed a normalized
+   query and a document built from the item title, parameters and, where useful,
+   description. Search only the category partition, with the M0 fallback rule.
+   Compare each encoder against M1/M2 by standalone Recall@K and by union
+   coverage.
+2. **E05b — dense historical-query retrieval
+   (`query → historical query → clicked item`).** Index normalized train query
+   texts from the history fold only. For a validation query, retrieve its top
+   `L ∈ {1, 3, 5, 10}` nearest historical queries, propagate their known clicked
+   items, and apply the same category filter. Compare it with M2 character-TFIDF
+   history and their deduplicated union. The validation query group, including
+   every one of its positive pairs, is excluded from the historical index.
+
+For retained dense sources, reserve `H ∈ {5, 10, 20}` positions in the
+50-candidate list and fill the remainder with the M1/M2 control. Record
+standalone Recall@1/5/10/20/50/200, hybrid macro Recall@50, HitRate@50,
+coverage, runtime, RAM/VRAM and per-query-class diagnostics (repeat,
+near-repeat, unseen). Select a source only when its overall Recall@50 gain is
+positive on the frozen split; repeat a material gain on an independent
+group-disjoint seed before accepting it.
+
+**Exit criteria for M3:** choose at most one or two dense sources (direct
+item, historical-query, or both) that provide measurable complementary recall
+relative to M1/M2, with a documented candidate quota.
 
 ---
 
