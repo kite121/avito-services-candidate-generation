@@ -30,8 +30,7 @@
 validation proxy подтверждены lexical BM25 + char-TFIDF, historical retrieval,
 zero-shot dense E5 и их M6 fusion. Однако до фактического дедлайна не был
 завершён новый полный Kaggle rerun M9 с dense-частью, не получены проверенные
-результаты CatBoost, fine-tuning и cross-encoder. Поэтому эти компоненты не
-следует представлять как финально подтверждённые улучшения.
+результаты CatBoost, fine-tuning, cross-encoder и провека LLM embeddings.
 
 Причина — ошибка планирования: первоначальная оценка оставшегося времени была
 сделана исходя из более длинного окна работ после путаницы между общей
@@ -65,6 +64,3 @@ notebooks/   Воспроизводимые этапы M0–M9
 | `06_m6_hybrid_fusion.ipynb` | Измерение complementarity и quota fusion |
 | `07_m7_catboost_selector.ipynb` | Leakage-safe CatBoost selector |
 | `09_m9_final_submission.ipynb` | Финальная генерация и validation `answer.csv` |
-
-`08_e13_cross_encoder.ipynb` будет добавлен только если эксперимент E13 будет
-реально запущен и зафиксирован в результатах.
