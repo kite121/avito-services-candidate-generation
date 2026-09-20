@@ -1,47 +1,70 @@
 # Avito Services Candidate Generation
 
-High-recall candidate generation for Avito service search. The system returns
-up to 50 service listing IDs for each query and is evaluated by macro
-`Recall@50`.
+Репозиторий решения для задачи candidate generation в поиске услуг Авито.
+Для каждого поискового запроса pipeline возвращает до 50 `item_id`; основная
+метрика — macro `Recall@50`.
 
-The project starts with reproducible lexical baselines, then measures whether
-historical, semantic and hybrid retrieval improve candidate coverage.
+Главный файл для воспроизведения полного гибридного pipeline —
+[notebooks/09_m9_final_submission.ipynb](notebooks/09_m9_final_submission.ipynb).
+Он запускается в Kaggle, строит кандидатов и валидирует формат `answer.csv`.
 
-## Status
+## Быстрый запуск полного pipeline
 
-Current milestone: **M3 — zero-shot semantic retrieval**. Completed analysis notebooks:
-`output/jupyter-notebook/m0_data_audit.ipynb` and
-`output/jupyter-notebook/m1_lexical_retrieval.ipynb` and
-`output/jupyter-notebook/m2_historical_query_retrieval.ipynb`.
+1. Создайте Kaggle Notebook из `notebooks/09_m9_final_submission.ipynb`.
+2. Подключите Kaggle Dataset с `train.parquet`, `benchmark_queries.parquet` и
+   `benchmark_items.parquet`.
+3. Включите Internet и GPU. Добавьте Kaggle Secrets
+   `CLEARML_API_ACCESS_KEY` и `CLEARML_API_SECRET_KEY`; host-параметры ClearML
+   подключаются опционально.
+4. Выполните **Run All**.
+5. Скачайте единственный submission-файл `answer.csv` из output-каталога,
+   путь к которому напечатает финальная ячейка.
 
-The full roadmap, experiment hypotheses and ClearML tracking contract are in
-[docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md).
+Вычисление выполняется локально в Kaggle на открытых весах
+`intfloat/multilingual-e5-large-instruct`; внешние inference API не
+используются.
 
-The current lexical baseline is RRF over stemmed all-field BM25 and
-control-normalized title char-TFIDF (`Recall@50 = 0.312988` on the frozen
-proxy). Its reusable local text cache is
-`artifacts/text_preprocessing/m1_lexical_best_v1/`; it is derived data and is
-intentionally ignored by Git.
+## Прозрачный финальный статус
 
-## Layout
+В репозитории сохранены все подготовленные и измеренные этапы. На frozen
+validation proxy подтверждены lexical BM25 + char-TFIDF, historical retrieval,
+zero-shot dense E5 и их M6 fusion. Однако до фактического дедлайна не был
+завершён новый полный Kaggle rerun M9 с dense-частью, не получены проверенные
+результаты CatBoost, fine-tuning и cross-encoder. Поэтому эти компоненты не
+следует представлять как финально подтверждённые улучшения.
+
+Причина — ошибка планирования: первоначальная оценка оставшегося времени была
+сделана исходя из более длинного окна работ после путаницы между общей
+длительностью соревнования и фактически оставшимся временем. В
+[docs/experiment_results.md](docs/experiment_results.md) разделены завершённые
+измерения и подготовленные, но не завершённые эксперименты.
+
+## Репозиторий
 
 ```text
-configs/                  Versioned experiment configurations
-data/                     Local input data only; ignored by Git
-artifacts/text_preprocessing/  Reusable derived text representations; ignored by Git
-docs/                     Project documentation and experiment plan
-output/jupyter-notebook/   Versioned executed analysis notebooks
-src/avito_retrieval/      Source package
+data/        Инструкция по локальному размещению исходных данных
+docs/        Описание решения и результаты экспериментов
+notebooks/   Воспроизводимые этапы M0–M9
 ```
 
-## Local setup
+Данные, embeddings, model checkpoints, ClearML credentials и итоговые CSV
+намеренно не хранятся в Git. Полное описание подхода — в
+[docs/solution.md](docs/solution.md); измеренные результаты — в
+[docs/experiment_results.md](docs/experiment_results.md).
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
-```
+## Ноутбуки
 
-Place the supplied Parquet files under `data/`. They are deliberately excluded
-from version control. ClearML is used for development-time experiment tracking;
-the final inference pipeline will remain runnable without external APIs.
+| Файл | Назначение |
+| --- | --- |
+| `00_m0_data_audit.ipynb` | Аудит данных и frozen validation protocol |
+| `01_m1_lexical_retrieval.ipynb` | BM25, char-TFIDF и русская нормализация |
+| `02_m2_historical_retrieval.ipynb` | Historical query retrieval без leakage |
+| `03_m3_multilingual_e5.ipynb` | Direct dense retrieval с multilingual-E5 |
+| `04_m4_lexical_hpo.ipynb` | Подготовленный поиск параметров BM25 и char-TFIDF |
+| `05_e08_finetune_e5.ipynb` | Time-boxed fine-tuning E5; запускается только при наличии времени |
+| `06_m6_hybrid_fusion.ipynb` | Измерение complementarity и quota fusion |
+| `07_m7_catboost_selector.ipynb` | Leakage-safe CatBoost selector |
+| `09_m9_final_submission.ipynb` | Финальная генерация и validation `answer.csv` |
+
+`08_e13_cross_encoder.ipynb` будет добавлен только если эксперимент E13 будет
+реально запущен и зафиксирован в результатах.
