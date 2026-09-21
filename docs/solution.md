@@ -104,16 +104,40 @@ macro `Recall@50`.
 и библиотеки `sentence-transformers`, `scikit-learn`, `snowballstemmer` и
 `pandas`. Inference выполняется в самом Kaggle runtime.
 
-## 7. Ограничения финального состояния
+## 7. Ограничения и непроверенные улучшения
 
-Полный M9 notebook был подготовлен как воспроизводимый Kaggle pipeline, но его
-новый end-to-end запуск с dense encoding не был завершён в оставшееся до
-дедлайна время. Это не является отрицательным результатом E5: M3 и M6 уже
-измерили его вклад на frozen proxy. Но это означает, что CatBoost, fine-tuning,
-cross-encoder и новый full-pipeline submission нельзя заявлять как
-подтверждённые результаты.
+M9 завершён как Kaggle submission workflow с artifact-level validation
+`answer.csv`. Для deadline run использован M1 lexical fallback без
+dense-источника: времени на повторный dense inference не осталось. Отдельно
+была проверена семантическая модель поиска
+(`intfloat/multilingual-e5-large-instruct`): она преобразует запросы и тексты
+объявлений в числовые представления, чтобы находить объявления, близкие по
+смыслу. Её вклад измерен отдельно на frozen proxy в M3 и M6. CatBoost,
+fine-tuning и cross-encoder не получили полной валидации, поэтому они не
+заявляются как подтверждённые улучшения.
 
 Причина — ошибка в оценке времени: план работ исходил из более длинного окна
 после путаницы между общей продолжительностью соревнования и реально
 оставшимся временем. Все незавершённые пункты сохранены как воспроизводимые
 ноутбуки, но отмечены в результатах именно как незавершённые.
+
+## 8. Future Experiments and Improvements
+
+Следующие эксперименты не вошли в подтверждённую конфигурацию и должны
+приниматься только после повторной оценки на frozen proxy:
+
+- **M4 — Lexical HPO:** системно подобрать параметры BM25, RRF и char-TFIDF,
+  чтобы уточнить lexical candidate generation без изменения общей архитектуры.
+- **M5 — Bi-encoder fine-tuning:** адаптировать выбранный bi-encoder к парам
+  «короткий запрос — выбранная услуга» с hard-negative mining.
+- **M7 — CatBoost selector:** построить memory-efficient supervised selector,
+  который распределяет 50 позиций между кандидатами расширенного pool.
+- **M8 — LLM embeddings:** получить локальные contextual embeddings от
+  instruction-tuned LLM и использовать их как дополнительный semantic signal.
+- **M10 — Cross-encoder reranking:** добавить точную pairwise оценку
+  «запрос — объявление» для небольшого candidate pool перед финальным выбором.
+- **M11 — Query expansion:** обогащать короткие запросы терминами и
+  параметрами, извлечёнными из train и corpus, с контролем query drift.
+
+Полная матрица гипотез, артефактов, метрик и статусов — в
+[experiment_roadmap.md](experiment_roadmap.md).

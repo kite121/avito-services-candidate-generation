@@ -28,9 +28,10 @@
 
 В репозитории сохранены все подготовленные и измеренные этапы. На frozen
 validation proxy подтверждены lexical BM25 + char-TFIDF, historical retrieval,
-zero-shot dense E5 и их M6 fusion. Однако до фактического дедлайна не был
-завершён новый полный Kaggle rerun M9 с dense-частью, не получены проверенные
-результаты CatBoost, fine-tuning и cross-encoder. Поэтому эти компоненты не
+zero-shot dense E5 и их M6 fusion. M9 сформирован как финальный Kaggle
+submission workflow и завершён в M1 lexical fallback: dense-источник был
+исключён из deadline run из-за нехватки времени. CatBoost, fine-tuning и
+cross-encoder не получили проверенных результатов, поэтому эти компоненты не
 следует представлять как финально подтверждённые улучшения.
 
 Причина — ошибка планирования: первоначальная оценка оставшегося времени была
@@ -50,7 +51,9 @@ notebooks/   Воспроизводимые этапы M0–M9
 Данные, embeddings, model checkpoints, ClearML credentials и итоговые CSV
 намеренно не хранятся в Git. Полное описание подхода — в
 [docs/solution.md](docs/solution.md); измеренные результаты — в
-[docs/experiment_results.md](docs/experiment_results.md).
+[docs/experiment_results.md](docs/experiment_results.md). Исходный план,
+гипотезы и финальный статус каждой ветки — в
+[docs/experiment_roadmap.md](docs/experiment_roadmap.md).
 
 ## Ноутбуки
 
@@ -65,6 +68,3 @@ notebooks/   Воспроизводимые этапы M0–M9
 | `06_m6_hybrid_fusion.ipynb` | Измерение complementarity и quota fusion |
 | `07_m7_catboost_selector.ipynb` | Leakage-safe CatBoost selector |
 | `09_m9_final_submission.ipynb` | Финальная генерация и validation `answer.csv` |
-
-`08_e13_cross_encoder.ipynb` будет добавлен только если эксперимент E13 будет
-реально запущен и зафиксирован в результатах.
